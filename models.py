@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
-from passlib.apps import custom_app_context as pass_helper
+# from passlib.apps import custom_app_context as pass_helper
+from passlib.hash import pbkdf2_sha256 as sha256
 db = SQLAlchemy()
 
 class User(db.Model):
@@ -9,6 +10,26 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % self.email
     def hash_password(self,password):
-        self.password = pass_helper.encrypt(password)
+        # self.password = pass_helper.encrypt(password)
+        self.password = sha256.hash(password)
     def verify_password(self,password):
-        return pass_helper.verify(password,self.password)
+        # return pass_helper.verify(password,self.password)
+        return sha256.verify(password,self.password)
+    @classmethod
+    def find_user(cls,email):
+        return cls.query.filter_by(email=email).first()
+    @classmethod
+    def return_all(cls):
+        def to_json(x):
+            return {
+                'email': x.email,
+                'password': x.password
+            }
+        return {
+            'users': list(map(lambda x:to_json(x),cls.query.all()))
+        }
+    @classmethod
+    def delete_all(cls):
+        num_rows = db.session.query(cls).delete()
+        db.session.commit()
+        return {'message': '{} row(s) deleted'.format(num_rows)}

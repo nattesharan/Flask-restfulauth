@@ -8,7 +8,7 @@ class UserRegistration(Resource):
     def post(self):
         data = parser.parse_args()
         email = data['email']
-        if User.query.filter_by(email=email).first() is not None:
+        if User.find_user(email) is not None:
             return {
                 'message': "User already exists with that name"
             }
@@ -22,9 +22,19 @@ class UserRegistration(Resource):
 class UserLogin(Resource):
     def post(self):
         data = parser.parse_args()
-        return {
-            'message': "hello"
-        }
+        user = User.find_user(data['email'])
+        if not user:
+            return {
+                'message': 'User not found'
+            },404
+        elif user.verify_password(data['password']):
+            return {
+                'message': 'Logged in as {}'.format(user.email.split('@')[0])
+            }
+        else:
+            return {
+                'message': 'Invalid credentials'
+            }
 class UserLogoutAccess(Resource):
     def post(self):
         return {'message': 'User logout'}
@@ -41,10 +51,10 @@ class TokenRefresh(Resource):
 
 class AllUsers(Resource):
     def get(self):
-        return {'message': 'List of users'}
+        return User.return_all()
 
     def delete(self):
-        return {'message': 'Delete all users'}
+        return User.delete_all()
 
 class PrivateResource(Resource):
     def get(self):
