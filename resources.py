@@ -1,6 +1,6 @@
 from flask_restful import Resource,reqparse
 from flask import request
-from models import User,db
+from models import User,db,RevokedTokenModel
 from flask_jwt_extended import (create_access_token,create_refresh_token,jwt_required,
                                 jwt_refresh_token_required,get_jwt_identity,get_raw_jwt)
 parser = reqparse.RequestParser()
@@ -46,13 +46,23 @@ class UserLogin(Resource):
                 'message': 'Invalid credentials'
             }
 class UserLogoutAccess(Resource):
+    @jwt_required
     def post(self):
-        return {'message': 'User logout'}
+        jti = get_raw_jwt()['jti']
+        revoked_token = RevokedTokenModel(jti=jti)
+        db.session.add(revoked_token)
+        db.session.commit()
+        return {'message': 'Access token has been revoked'}
       
       
 class UserLogoutRefresh(Resource):
+    @jwt_refresh_token_required
     def post(self):
-        return {'message': 'User logout'}
+        jti = get_raw_jwt()['jti']
+        revoked_token = RevokedTokenModel(jti=jti)
+        db.session.add(revoked_token)
+        db.session.commit()
+        return {'message': 'Refresh token has been revoked'}
       
       
 class TokenRefresh(Resource):
