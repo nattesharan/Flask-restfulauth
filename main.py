@@ -1,5 +1,4 @@
 from flask import Flask
-from flask_httpauth import HTTPAuth
 def create_app(config):
     app = Flask(__name__)
     app.secret_key = 'TOKENAUTHAPP'
