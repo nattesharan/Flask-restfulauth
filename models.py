@@ -33,12 +33,3 @@ class User(db.Model):
         num_rows = db.session.query(cls).delete()
         db.session.commit()
         return {'message': '{} row(s) deleted'.format(num_rows)}
-    
-class RevokedTokenModel(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    jti = db.Column(db.String(512))
-
-    @classmethod
-    def is_jti_blacklisted(cls,jti):
-        token = cls.query.filter_by(jti=jti).first()
-        return bool(token)
