@@ -1,9 +1,12 @@
-from flask_restful import Resource
+from flask_restful import Resource,reqparse
 from flask import request
 from models import User,db
+parser = reqparse.RequestParser()
+parser.add_argument('email',help='This fielld cannot be blank',required=True)
+parser.add_argument('password',help='This fielld cannot be blank',required=True)
 class UserRegistration(Resource):
     def post(self):
-        data = request.get_json()
+        data = parser.parse_args()
         email = data['email']
         if User.query.filter_by(email=email).first() is not None:
             return {
@@ -18,6 +21,7 @@ class UserRegistration(Resource):
         }
 class UserLogin(Resource):
     def post(self):
+        data = parser.parse_args()
         return {
             'message': "hello"
         }
